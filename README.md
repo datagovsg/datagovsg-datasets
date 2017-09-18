@@ -1,2 +1,2 @@
-# Data.gov.sg-Datasets
-A repository to track dataset request, issues and suggestions.
+# Data.gov.sg Datasets
+This repository is to help track dataset requests, issues and suggestions.
