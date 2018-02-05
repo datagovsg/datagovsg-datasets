@@ -1,0 +1,126 @@
+swagger: "2.0"
+info:
+  version: "1.0.1"
+  title: "Data.gov.sg developer APIs"
+  termsOfService: "https://data.gov.sg/privacy-and-website-terms#api-terms"
+  contact:
+    email: "feedback@data.gov.sg"
+  license:
+    name: "Singapore Open Data License 1.0"
+    url: "https://data.gov.sg/open-data-licence"
+host: "api.data.gov.sg"
+basePath: "/v1"
+tags:
+- name: "transport"
+schemes:
+- "http"
+paths:
+  /transport/taxi-availability:
+    post:
+      tags:
+      - "transport"
+      summary: ""
+      description: "Returns the real-time location of available taxis in Singapore."
+      operationId: "getRealtimeTaxiAvailability"
+      produces:
+      - "application/json"
+      responses:
+        200: 
+          description: Successful response
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        405:
+          description: "Invalid input"
+          
+  /transport/taxi-availability/{date_time}:
+    post:
+      tags:
+      - "transport"
+      summary: ""
+      description: "Returns the real-time location of available taxis in Singapore."
+      operationId: "getHistoricalTaxiAvailability"
+      produces:
+      - "application/json"
+      parameters:
+        - in: path
+          name: date_time   # Note the name is the same as in the path
+          required: true
+          type: string
+          description: "Format:\nYYYY-MM-DD[T]HH:mm:ss (SGT) \nE.g. 2016-12-12T09:45:00."
+      responses:
+        200: 
+          description: Successful response
+          schema:
+            $ref: "#/definitions/ApiResponse"
+        405:
+          description: "Invalid input"
+
+definitions:
+  Crs:
+    type: "object"
+    required :
+    - "type"
+    - "properties"
+    properties:
+      type:
+        type: "string"
+        enum:
+        - "link"
+      properties:
+        type: "object"
+        properties:
+          href: 
+            type: "string"
+            enum:
+            - "http://spatialreference.org/ref/epsg/4326/ogcwkt/"
+          type:
+            type: "string"
+            enum:
+            - "ogcwki"
+  
+  Point2D:
+    type: array
+    maxItems: 2
+    minItems: 2
+    items:
+      type: number
+      
+      
+  Feature:
+    type: object
+    description: Feature
+    required:
+     - type
+     - geometry
+    externalDocs:
+      url: http://geojson.org/geojson-spec.html#feature
+    properties:
+      type:
+        type: string
+        enum:
+        - Feature
+      geometry:
+        properties:
+          type: 
+            type: string
+            enum:
+            - Multipoint
+          coordinates:
+            type: array
+            items:
+              $ref: '#/definitions/Point2D'
+        
+  ApiResponse:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        enum:
+        - "FeatureCollection"
+      crs:
+        $ref: "#/definitions/Crs"
+      feaures:
+        type: "array"
+        items:
+          $ref: "#/definitions/Feature"
+
