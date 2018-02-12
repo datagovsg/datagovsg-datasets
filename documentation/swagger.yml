@@ -1,126 +1,1663 @@
-swagger: "2.0"
+---
+openapi: 3.0.0
 info:
-  version: "1.0.1"
-  title: "Data.gov.sg developer APIs"
-  termsOfService: "https://data.gov.sg/privacy-and-website-terms#api-terms"
-  contact:
-    email: "feedback@data.gov.sg"
-  license:
-    name: "Singapore Open Data License 1.0"
-    url: "https://data.gov.sg/open-data-licence"
-host: "api.data.gov.sg"
-basePath: "/v1"
-tags:
-- name: "transport"
-schemes:
-- "http"
+  title: Data.gov.sg APIs
+  description: '"APIs for People"'
+  version: 1.0.0
+servers:
+  - url: https://api.data.gov.sg/v1
 paths:
   /transport/taxi-availability:
-    post:
+    get:
+      summary: Get locations of available taxis in Singapore
+      description: |
+        - Retrieved every 30 seconds from LTA's Datamall.
+        - The response is a valid **GeoJSON** which you could insert into a mapping tool like Leaflet
+        - As LTA does not provide any kind of metadata, the timestamp provided in the response is the scrape time
+        - We recommend that this endpoint be called every minute
+        - Use the `date_time` parameter to retrieve the latest available data at that moment in time
       tags:
-      - "transport"
-      summary: ""
-      description: "Returns the real-time location of available taxis in Singapore."
-      operationId: "getRealtimeTaxiAvailability"
-      produces:
-      - "application/json"
-      responses:
-        200: 
-          description: Successful response
-          schema:
-            $ref: "#/definitions/ApiResponse"
-        405:
-          description: "Invalid input"
-          
-  /transport/taxi-availability/{date_time}:
-    post:
-      tags:
-      - "transport"
-      summary: ""
-      description: "Returns the real-time location of available taxis in Singapore."
-      operationId: "getHistoricalTaxiAvailability"
-      produces:
-      - "application/json"
+        - Transport
       parameters:
-        - in: path
-          name: date_time   # Note the name is the same as in the path
-          required: true
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
           type: string
-          description: "Format:\nYYYY-MM-DD[T]HH:mm:ss (SGT) \nE.g. 2016-12-12T09:45:00."
       responses:
-        200: 
-          description: Successful response
+        '200':
+          description: Taxi availability information
+          content:
+            application/vnd.geo+json:
+              schema:
+                $ref: '#/components/schemas/TaxiLocations'
+        default:
+          $ref: '#/components/responses/Error' 
+  /transport/traffic-images:
+    get:
+      summary: Get the latest images from traffic cameras all around Singapore
+      description: |
+        - Retrieved every 20 seconds from LTA's Datamall
+        - Locations of the cameras are also provided in the response
+        - We recommend that this endpoint be called every minute
+        - Use the `date_time` parameter to retrieve the latest available data at that moment in time.
+      tags:
+        - Transport
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+      responses:
+        '200':
+          description: PSI Information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrafficImages'
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/psi:
+    get:
+      summary: Retrieve the latest PSI information
+      description: |
+        - Updated hourly from NEA.
+        - Readings are provided for each major region in Singapore
+        - The `region_metadata` field in the response provides longitude/latitude information for the regions. You can use that to place the readings on a map.
+        - Use the `date_time` parameter to retrieve the latest PSI readings at that moment in time.
+        - Use the `date` parameter to retrieve all of the readings for that day.
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: PSI Information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  region_metadata:
+                    $ref: '#/components/schemas/RegionMetadataForPsiAndPm25'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      $ref: '#/components/schemas/PsiInformation'
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/pm25:
+    get:
+      summary: Retrieve the latest PM2.5 information
+      description: |
+        - Updated hourly from NEA.
+        - Readings are provided for each major region in Singapore
+        - The `region_metadata` field in the response provides longitude/latitude information for the regions. You can use that to place the readings on a map.
+        - Use the `date_time` parameter to retrieve the latest PM2.5 readings at that moment in time
+        - Use the `date` parameter to retrieve all of the readings for that day
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: PM 2.5 Information
+          content:
+            application/json:            
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  region_metadata:
+                    $ref: '#/components/schemas/RegionMetadataForPsiAndPm25'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      $ref: '#/components/schemas/Pm25Information'
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/2-hour-weather-forecast:
+    get:
+      summary: Retrieve the latest two hour weather forecast
+      description: |
+        - Updated half-hourly from NEA
+        - Forecasts are given for multiple areas in Singapore
+        - The `area_metadata` field in the response provides longitude/latitude information for the areas. You can use that to place the forecasts on a map.
+        - Use the `date_time` parameter to retrieve the latest forecast issued at that moment in time.
+        - Use the `date` parameter to retrieve all of the forecasts issued for that day
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 2 Hour Weather Forecast
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  area_metadata:
+                    $ref: '#/components/schemas/AreaMetadata'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      $ref: '#/components/schemas/2HourWeatherForecast'
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/24-hour-weather-forecast:
+    get:
+      summary: Retrieve the latest 24 hour weather forecast
+      description: |
+        - Updated multiple times throughout the day
+        - A general forecast for the 24 hour period is provided
+        - Forecasts for each major region in Singapore is also provided for 6/12 hour periods
+        - Use the `date_time` parameter to retrieve the latest forecast issued at that moment in time.
+        - Use the `date` parameter to retrieve all of the forecasts issued for that day
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 24 Hour Weather Forecast
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  area_metadata:
+                    $ref: '#/components/schemas/AreaMetadata'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      $ref: '#/components/schemas/24HourWeatherForecast'
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/4-day-weather-forecast:
+    get:
+      summary: Retrieve the latest 4 day weather forecast
+      description: |
+        - Updated twice a day from NEA
+        - The forecast is for the next 4 days
+        - Use the `date_time` parameter to retrieve the latest forecast issued at that moment in time.
+        - Use the `date` parameter to retrieve all of the forecasts issued for that day
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: 4 Day Weather Forecast
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      $ref: '#/components/schemas/4DayWeatherForecast'
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/uv-index:
+    get:
+      summary: Retrieve the latest UV index information
+      description: |
+        - Updated every hour between 7 AM and 7 PM everyday
+        - The UV index value is averaged over the preceeding hour
+        - Use the `date_time` parameter to retrieve the latest forecast issued at that moment in time.
+        - Use the `date` parameter to retrieve all of the forecasts issued for that day
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: UV Index
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      $ref: '#/components/schemas/UvIndexInformation'
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/air-temperature:
+    get:
+      summary: Get air temperature readings across Singapore
+      description: |
+        - Has per-minute readings from NEA
+        - Use the `date_time` parameter to retrieve the latest available data at that moment in time
+        - Use the `date` parameter to retrieve all of the readings for that day.
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Air Temperature Information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  metadata:
+                    type: object
+                    properties:
+                      stations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StationMetadata'
+                      reading_type:
+                        $ref: '#/components/schemas/ReadingTypeMetadata'
+                      reading_unit:
+                        $ref: '#/components/schemas/ReadingUnitMetadata'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of reading
+                        readings:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              station_id:
+                                type: string
+                              value:
+                                type: number
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/rainfall:
+    get:
+      summary: Get rainfall readings across Singapore
+      description: |
+        - 5-minute readings from NEA
+        - Use the `date_time` parameter to retrieve the latest available data at that moment in time
+        - Use the `date` parameter to retrieve all of the readings for that day.
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Rainfall Information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  metadata:
+                    type: object
+                    properties:
+                      stations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StationMetadata'
+                      reading_type:
+                        $ref: '#/components/schemas/ReadingTypeMetadata'
+                      reading_unit:
+                        $ref: '#/components/schemas/ReadingUnitMetadata'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of reading
+                        readings:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              station_id:
+                                type: string
+                              value:
+                                type: number
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/relative-humidity:
+    get:
+      summary: Get relative humidity readings across Singapore
+      description: |
+        - Has per-minute readings from NEA
+        - Use the `date_time` parameter to retrieve the latest available data at that moment in time
+        - Use the `date` parameter to retrieve all of the readings for that day.
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Relative Humidity Information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  metadata:
+                    type: object
+                    properties:
+                      stations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StationMetadata'
+                      reading_type:
+                        $ref: '#/components/schemas/ReadingTypeMetadata'
+                      reading_unit:
+                        $ref: '#/components/schemas/ReadingUnitMetadata'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of reading
+                        readings:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              station_id:
+                                type: string
+                              value:
+                                type: number
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/wind-direction:
+    get:
+      summary: Get wind direction readings across Singapore
+      description: |
+        - Has per-minute readings from NEA
+        - Use the `date_time` parameter to retrieve the latest available data at that moment in time
+        - Use the `date` parameter to retrieve all of the readings for that day.
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Wind Direction Information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  metadata:
+                    type: object
+                    properties:
+                      stations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StationMetadata'
+                      reading_type:
+                        $ref: '#/components/schemas/ReadingTypeMetadata'
+                      reading_unit:
+                        $ref: '#/components/schemas/ReadingUnitMetadata'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of reading
+                        readings:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              station_id:
+                                type: string
+                              value:
+                                type: number
+        default:
+          $ref: '#/components/responses/Error'
+  /environment/wind-speed:
+    get:
+      summary: Get wind speed readings across Singapore
+      description: |
+        - Has per-minute readings from NEA
+        - Use the `date_time` parameter to retrieve the latest available data at that moment in time
+        - Use the `date` parameter to retrieve all of the readings for that day.
+      tags:
+        - Environment
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: YYYY-MM-DD
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Wind Speed Information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  metadata:
+                    type: object
+                    properties:
+                      stations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StationMetadata'
+                      reading_type:
+                        $ref: '#/components/schemas/ReadingTypeMetadata'
+                      reading_unit:
+                        $ref: '#/components/schemas/ReadingUnitMetadata'
+                  items:
+                    type: array
+                    description: Array of items
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of reading
+                        readings:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              station_id:
+                                type: string
+                              value:
+                                type: number
+        default:
+          $ref: '#/components/responses/Error'
+  /package_list:
+    get:
+      summary: Return a list of datasets on data.gov.sg
+      description:
+      tags:
+        - CKAN
+      parameters:
+        - name: limit
+          in: query
+          description: int
+          required: false
           schema:
-            $ref: "#/definitions/ApiResponse"
-        405:
-          description: "Invalid input"
-
-definitions:
-  Crs:
-    type: "object"
-    required :
-    - "type"
-    - "properties"
-    properties:
-      type:
-        type: "string"
-        enum:
-        - "link"
-      properties:
-        type: "object"
-        properties:
-          href: 
-            type: "string"
-            enum:
-            - "http://spatialreference.org/ref/epsg/4326/ogcwkt/"
-          type:
-            type: "string"
-            enum:
-            - "ogcwki"
-  
-  Point2D:
-    type: array
-    maxItems: 2
-    minItems: 2
-    items:
-      type: number
-      
-      
-  Feature:
-    type: object
-    description: Feature
-    required:
-     - type
-     - geometry
-    externalDocs:
-      url: http://geojson.org/geojson-spec.html#feature
-    properties:
-      type:
-        type: string
-        enum:
-        - Feature
-      geometry:
-        properties:
-          type: 
+            type: integer
+        - name: offset
+          in: query
+          description: int
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dataset listing
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanPackageList'
+                  - example:
+                      help: https://data.gov.sg/api/3/action/help_show?name=package_list
+                      success: true
+                      results:
+                        - gdp
+                        - population
+                        - water-consumption
+        default:
+          description: Error information
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanError'
+                  - example:
+                      help: https://data.gov.sg/api/3/action/help_show?name=package_list
+                      success: false
+                      error: {}
+      servers:
+       - url: https://data.gov.sg/api/action
+  /package_show:
+    get:
+      summary: Return the metadata of a dataset (package) and its resources
+      description:
+      tags:
+        - CKAN
+      parameters:
+        - name: id
+          in: query
+          description: Package name or id
+          required: true
+          schema:
             type: string
-            enum:
-            - Multipoint
-          coordinates:
-            type: array
-            items:
-              $ref: '#/definitions/Point2D'
-        
-  ApiResponse:
-    type: "object"
-    properties:
-      type:
-        type: "string"
-        enum:
-        - "FeatureCollection"
-      crs:
-        $ref: "#/definitions/Crs"
-      feaures:
-        type: "array"
+      responses:
+        '200':
+          description: Dataset metadata
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanPackageShow'
+                  - properties:
+                      help:
+                        example: https://data.gov.sg/api/3/action/help_show?name=package_show
+                      success:
+                        example: true
+        default:
+          description: Error information
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanError'
+                  - example:
+                      help: https://data.gov.sg/api/3/action/help_show?name=package_show
+                      success: false
+                      error: {}
+      servers:
+       - url: https://data.gov.sg/api/action
+  /resource_show:
+    get:
+      summary: Return the metadata of a resource
+      description:
+      tags:
+        - CKAN
+      parameters:
+        - name: id
+          in: query
+          description: Resource id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resource metadata
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanResourceShow'
+                  - properties:
+                      help:
+                        example: https://data.gov.sg/api/3/action/help_show?name=resource_show
+                      success:
+                        example: true
+        default:
+          description: Error information
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanError'
+                  - example:
+                      help: https://data.gov.sg/api/3/action/help_show?name=resource_show
+                      success: false
+                      error: {}
+      servers:
+       - url: https://data.gov.sg/api/action
+  /datastore_search:
+    get:
+      summary: Search data in a resource
+      description:
+      tags:
+        - CKAN
+      parameters:
+        - name: resource_id
+          in: query
+          description: Resource id
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: int
+          required: false
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          description: int
+          required: false
+          schema:
+            type: integer
+        - name: fields
+          in: query
+          description: Commas-separated list of fields to retrieve
+          required: false
+          schema:
+            type: string
+        - name: filters
+          in: query
+          description: 'Dictionary of matching conditions, e.g {"key1": "a", "key2": "b"}'
+          required: false
+          schema:
+            type: string
+        - name: q
+          in: query
+          description: 'String or dictionary. Like filters but performs a fuzzy text search'
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: 'Comma-separated field names with ordering, eg.: "fieldname1, fieldname2 desc"'
+          required: false
+          schema:
+            type: string
+        - name: records_format
+          in: query
+          description: Format for the returned records
+          required: false
+          schema:
+            type: string
+            enum: [objects, lists, csv]
+            default: objects
+      responses:
+        '200':
+          description: Fetched data
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanDatastoreSearch'
+                  - example:
+                      help: https://data.gov.sg/api/3/action/help_show?name=datastore_search
+                      success: true
+                      result:
+                        resource_id: f9dbfc75-a2dc-42af-9f50-425e4107ae84
+                        fields:
+                          - type: numeric
+                            id: year
+                          - type: text
+                            id: level_1
+                          - type: numeric
+                            id: value
+                        records:
+                          - year:	1960
+                            level_1:	Total Residents
+                            value:	1646400
+                          - year:	1960
+                            level_1:	Total Male Residents
+                            value:	859600
+                          - year:	1960
+                            level_1:	Total Female Residents
+                            value:	786800
+                          - year:	1961
+                            level_1:	Total Residents
+                            value:	1646400
+                          - year:	1961
+                            level_1:	Total Male Residents
+                            value:	859600
+                        limit: 5
+                        total: 870
+                        _links:
+                          start: /api/action/datastore_search?limit=5&resource_id=f9dbfc75-a2dc-42af-9f50-425e4107ae84
+                          next: /api/action/datastore_search?offset=5&limit=5&resource_id=f9dbfc75-a2dc-42af-9f50-425e4107ae84
+        default:
+          description: Error information
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CkanError'
+                  - example:
+                      help: https://data.gov.sg/api/3/action/help_show?name=datastore_search
+                      success: false
+                      error: {}
+      servers:
+       - url: https://data.gov.sg/api/action
+components:
+  schemas:
+    TaxiLocations:
+      type: object
+      description: A GeoJSON representing the locations of available taxis in Singapore
+      properties:
+        type:
+          type: string
+          description: Determines the type of the GeoJSON object
+        crs:
+          type: object
+          description: The coordinate reference system used
+        features:
+          type: array
+          items:
+            type: object
+            properties:
+              geometry:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum: ['MultiPoint']
+                  coordinates:
+                    type: array
+                    items:
+                      type: array
+                      description: A position (longitude, latitude)
+                      minItems: 2
+                      maxItems: 2
+                      items:
+                        type: number
+              properties:
+                type: object
+                description: Additional meta-data from Data.gov.sg
+                properties:
+                  timestamp:
+                    type: string
+                    description: Time of acquisition of data from LTA's Datamall
+                    format: date-time
+                  taxi_count:
+                    type: integer
+                    description: Total number of available taxis
+    ApiInfo:
+      type: object
+      description: Contains information about the API (from Data.gov.sg)
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+    TrafficImages:
+      type: object
+      required:
+        - timestamp
+        - cameras
+      properties:
+        timestamp:
+          type: string
+          description: Time of acquisition of data from LTA's Datamall
+          format: date-time
+        cameras:
+          type: array
+          items:
+            type: object
+            description: Camera information and images
+            required:
+              - timestamp
+              - camera_id
+              - image_id
+              - image
+              - image_metadata
+            properties:
+              timestamp:
+                type: string
+                description: Time of image
+                format: date-time
+              camera_id:
+                type: number
+                description: Camera ID provided by LTA
+              image_id:
+                type: number
+                description: Image ID provided by LTA
+              image:
+                type: string
+                description: URL of image
+              image_metadata:
+                type: object
+                description: Metadata of the image file
+                required:
+                  - height
+                  - width
+                  - md5
+                properties:
+                  height:
+                    type: number
+                    description: Height of the image (pixels)
+                  width:
+                    type: number
+                    description: Width of the image (pixels)
+                  md5:
+                    type: string
+                    description: MD5 hash of image file
+    Pm25Information:
+      type: object
+      properties:
+        update_timestamp:
+          type: string
+          description: Time of acquisition of data from NEA
+          format: date-time
+        timestamp:
+          type: string
+          description: Data timestamp
+          format: date-time
+        readings:
+          type: object
+          description: Regional hourly PM2.5 concentration
+          properties:
+            pm25_one_hourly:
+              $ref: '#/components/schemas/ConcentrationReadingByRegion'
+    PsiInformation:
+      type: object
+      properties:
+        update_timestamp:
+          type: string
+          description: Time of acquisition of data from NEA
+          format: date-time
+        timestamp:
+          type: string
+          description: Data timestamp
+          format: date-time
+        readings:
+          type: object
+          description: Overall and regional PSI data including pollutant concentrations and sub-indices
+          properties:
+            psi_twenty_four_hourly:
+              $ref: '#/components/schemas/ReadingByRegion'
+            psi_three_hourly:
+              $ref: '#/components/schemas/ReadingByRegion'
+            pm10_sub_index:
+              $ref: '#/components/schemas/ReadingByRegion'
+            pm25_sub_index:
+              $ref: '#/components/schemas/ReadingByRegion'
+            so2_sub_index:
+              $ref: '#/components/schemas/ReadingByRegion'
+            o3_sub_index:
+              $ref: '#/components/schemas/ReadingByRegion'
+            co_sub_index:
+              $ref: '#/components/schemas/ReadingByRegion'
+            pm10_twenty_four_hourly:
+                $ref: '#/components/schemas/ConcentrationReadingByRegion'
+            pm25_twenty_four_hourly:
+              $ref: '#/components/schemas/ConcentrationReadingByRegion'
+            no2_one_hour_max:
+              $ref: '#/components/schemas/ConcentrationReadingByRegion'
+            so2_twenty_four_hourly:
+              $ref: '#/components/schemas/ConcentrationReadingByRegion'
+            co_eight_hour_max:
+              $ref: '#/components/schemas/ConcentrationReadingByRegion'
+            o3_eight_hour_max:
+              $ref: '#/components/schemas/ConcentrationReadingByRegion'
+    ReadingByRegion:
+      type: object
+      properties:
+        national:
+          type: number
+          description: Reading for national reporting stations
+        north:
+          type: number
+          description: Reading for north region
+        south:
+          type: number
+          description: Reading for south region
+        east:
+          type: number
+          description: Reading for east region
+        west:
+          type: number
+          description: Reading for west region
+        central:
+          type: number
+          description: Reading for central region
+    ConcentrationReadingByRegion:
+      type: object
+      description: Concentration is measured in micrograms per cubic metre
+      properties:
+        national:
+          type: number
+          description: Reading for national reporting stations
+        north:
+          type: number
+          description: Reading for north region
+        south:
+          type: number
+          description: Reading for south region
+        east:
+          type: number
+          description: Reading for east region
+        west:
+          type: number
+          description: Reading for west region
+        central:
+          type: number
+          description: Reading for central region
+    RegionMetadataForPsiAndPm25:
+      type: array
+      description: Additional information on regions provided
+      items:
+        type: object
+        required:
+          - name
+          - label_location
+        properties:
+          name:
+            type: string
+            description: Name of the region
+          label_location:
+            type: object
+            description: Provides longitude and latitude for placing readings on a map
+            required:
+              - longitude
+              - latitude
+            properties:
+              longitude:
+                type: number
+              latitude:
+                type: number
+    AreaMetadata:
+      type: array
+      description: Additional information on areas provided
+      items:
+        type: object
+        required:
+          - name
+          - label_location
+        properties:
+          name:
+            type: string
+            description: Name of the area
+          label_location:
+            type: object
+            description: Provides longitude and latitude for placing readings on a map
+            required:
+              - longitude
+              - latitude
+            properties:
+              longitude:
+                type: number
+              latitude:
+                type: number
+    2HourWeatherForecast:
+      type: object
+      properties:
+        update_timestamp:
+          type: string
+          description: Time of acquisition of data from NEA
+          format: date-time
+        timestamp:
+          type: string
+          description: Time forecast was issued by NEA
+          format: date-time
+        valid_period:
+          $ref: '#/components/schemas/ForecastValidPeriod'
+        forecasts:
+          type: array
+          description: Forecasts for various areas in Singapore
+          items:
+            type: object
+            required:
+              - area
+              - forecast
+            properties:
+              area:
+                type: string
+              forecast:
+                type: string
+    24HourWeatherForecast:
+      type: object
+      required:
+        - update_timestamp
+        - timestamp
+        - valid_period
+        - general
+        - periods
+      properties:
+        update_timestamp:
+          type: string
+          description: Time of acquisition of data from NEA
+          format: date-time
+        timestamp:
+          type: string
+          description: Time forecast was issued by NEA
+          format: date-time
+        valid_period:
+          type: object
+          description: Period of time the forecast is valid for
+          required:
+            - start
+            - end
+          properties:
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+        general:
+          type: object
+          description: A general weather forecast for the 24 hour period
+          required:
+            - forecast
+            - relative_humidity
+            - temperature
+            - wind
+          properties:
+            forecast:
+              type: string
+            relative_humidity:
+              type: object
+              description: Unit of measure -  Percentage
+              required:
+                - low
+                - high
+              properties:
+                low:
+                  type: number
+                high:
+                  type: number
+            temperature:
+              type: object
+              description: Unit of measure -  Degrees Celsius
+              required:
+                - low
+                - high
+              properties:
+                low:
+                  type: number
+                high:
+                  type: number
+            wind:
+              type: object
+              required:
+                - speed
+                - direction
+              properties:
+                speed:
+                  type: object
+                  description: Unit of measure -  Kilometeres per hour
+                  required:
+                    - low
+                    - high
+                  properties:
+                    low:
+                      type: number
+                    high:
+                      type: number
+                direction:
+                  type: string
+      periods:
+        type: array
+        description: Regional forecasts for 6/12 hour periods
         items:
-          $ref: "#/definitions/Feature"
-
+          type: object
+          required:
+            - time
+            - regions
+          properties:
+            time:
+              $ref: '#/components/schemas/ForecastValidPeriod'
+            regions:
+              type: object
+              required:
+                - north
+                - south
+                - east
+                - west
+                - central
+              properties:
+                north:
+                  type: string
+                  description: Forecast for the north region of Singapore
+                south:
+                  type: string
+                  description: Forecast for the south region of Singapore
+                east:
+                  type: string
+                  description: Forecast for the east region of Singapore
+                west:
+                  type: string
+                  description: Forecast for the west region of Singapore
+                central:
+                  type: string
+                  description: Forecast for the central region of Singapore
+    ForecastValidPeriod:
+      type: object
+      description: Period of time the forecast is valid for
+      required:
+        - start
+        - end
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+    4DayWeatherForecast:
+      type: object
+      required:
+        - update_timestamp
+        - timestamp
+        - forecasts
+      properties:
+        update_timestamp:
+          type: string
+          description: Time of acquisition of data from NEA
+          format: date-time
+        timestamp:
+          type: string
+          description: Time forecast was issued by NEA
+          format: date-time
+        forecasts:
+          type: array
+          description: Chronologically ordered forecasts for the next 4 days
+          items:
+            type: object
+            required:
+              - date
+              - timestamp
+              - forecast
+              - temperature
+              - relative_humidity
+              - wind
+            properties:
+              date:
+                type: string
+                description: Forecast Date
+              timestamp:
+                type: string
+                format: date-time
+                description: Timestamp which indicates the start of the day
+              forecast:
+                type: string
+                description: Forecast summary for the day
+              relative_humidity:
+                type: object
+                description: Unit of measure -  Percentage
+                required:
+                  - low
+                  - high
+                properties:
+                  low:
+                    type: number
+                  high:
+                    type: number
+              temperature:
+                type: object
+                description: Unit of measure -  Degrees Celsius
+                required:
+                  - low
+                  - high
+                properties:
+                  low:
+                    type: number
+                  high:
+                    type: number
+              wind:
+                type: object
+                required:
+                  - speed
+                  - direction
+                properties:
+                  speed:
+                    type: object
+                    description: Unit of measure -  Kilometeres per hour
+                    required:
+                      - low
+                      - high
+                    properties:
+                      low:
+                        type: number
+                      high:
+                        type: number
+                  direction:
+                    type: string
+    UvIndexInformation:
+      type: object
+      required:
+        - update_timestamp
+        - timestamp
+        - index
+      properties:
+        update_timestamp:
+          type: string
+          description: Time of acquisition of data from NEA
+          format: date-time
+        timestamp:
+          type: string
+          format: date-time
+        index:
+          type: array
+          description: Reverse-chronologically ordered indexes
+          items:
+            type: object
+            required:
+              - timestamp
+              - value
+            properties:
+              timestamp:
+                type: string
+                description: Timestamp indicating the start of the hour for which the index is for
+                format: date-time
+              value:
+                type: number
+                description: UV index for the hour
+    StationMetadata:
+      type: object
+      properties:
+        id:
+          description: Stations's ID
+          type: string
+        device_id:
+          description: Reading Device's ID (usually same as Station's ID)
+          type: string
+        name:
+          description: Stations's name
+          type: string
+        location:
+          description: Location information for the station
+          type: object
+          required:
+            - longitude
+            - latitude
+          properties:
+            longitude:
+              type: number
+            latitude:
+              type: number
+    ReadingTypeMetadata:
+      type: string
+      description: Information about the reading
+    ReadingUnitMetadata:
+      type: string
+      description: Measurement unit for reading
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    CkanBase:
+      type: object
+      required:
+        - help
+        - success
+      properties:
+        help:
+          type: string
+          description: URL that returns a help string for the API action
+        success:
+          type: boolean
+          description: Whether fetch is succesfully
+    CkanError:
+      allOf:
+        - $ref: '#/components/schemas/CkanBase'
+        - type: object
+          required:
+            - error
+          properties:
+            error:
+              type: object
+              description: Error type and description
+    CkanPackageList:
+      allOf:
+        - $ref: '#/components/schemas/CkanBase'
+        - type: object
+          required:
+            - result
+          properties:
+            result:
+              type: array
+              description: List of dataset names
+              items:
+                type: string
+                description: Package name
+    CkanPackageShow:
+      allOf:
+        - $ref: '#/components/schemas/CkanBase'
+        - type: object
+          required:
+            - result
+          properties:
+            result:
+              $ref: '#/components/schemas/CkanPackage'
+    CkanResourceShow:
+      allOf:
+        - $ref: '#/components/schemas/CkanBase'
+        - type: object
+          required:
+            - result
+          properties:
+            result:
+              $ref: '#/components/schemas/CkanResource'
+    CkanDatastoreSearch:
+      allOf:
+        - $ref: '#/components/schemas/CkanBase'
+        - type: object
+          required:
+            - result
+          properties:
+            result:
+              type: object
+              description: Resource
+              required: 
+                - resource_id
+                - fields
+                - records
+              properties:
+                resource_id:
+                  type: string
+                  description: Resource id
+                fields:
+                  type: array
+                  description: Data fields
+                  items:
+                    type: object
+                    description: Data field
+                records:
+                  type: array
+                  description: Data rows
+                  items:
+                    type: object
+                    description: Data row in object format
+                limit:
+                  type: integer
+                  description: Limit for number of rows returned
+                total:
+                  type: integer
+                  description: Total number of rows
+                _links:
+                  type: object
+                  description: Pagination-related links
+                  properties:
+                    start:
+                      type: string
+                      description: Link back to first page
+                    next:
+                      type: string
+                      description: Link to next page
+    CkanPackage:
+      type: object
+      description: Package object
+      properties:
+        id:
+          type: string
+          description: Dataset id
+          example: d1778088-f56a-4353-891f-21f803b2dad5
+        name:
+          type: string
+          description: Dataset name
+          example: resident-population-by-ethnicity-gender-and-age-group
+        title:
+          type: string
+          description: Displayed dataset name
+          example: Singapore Residents By Age Group, Ethnic Group And Gender, End June, Annual
+        description:
+          type: string
+          description: Dataset description
+          example: Data for 1970 and from 1980 onwards refer to Singapore residents (citizens and permanent residents).
+        topics:
+          type: array
+          description: Related topics
+          items: 
+            type: string
+          example:
+            - society
+        frequency:
+          type: string
+          description: Update frequency
+          example: annual
+        url:
+          type: string
+          description: Reference url
+          example: http://www.tablebuilder.singstat.gov.sg/publicfacing/createDataTable.action?refId=315&exportType=csv
+        notes:
+          type: string
+          description: Additional notes
+          example: ''
+        license_title:
+          type: string
+          description: License of use
+          example: License not specified
+        num_resources:
+          type: integer
+          description: Number of resources in dataset
+          example: 2
+        resources:
+          type: array
+          description: List of resources
+          items:
+            $ref: '#/components/schemas/CkanResource'
+        groups:
+          type: array
+          description: Dataset categories
+          items:
+            $ref: '#/components/schemas/CkanGroup'
+        organizations:
+          type: array
+          description: Related organizations
+          items: '#/components/schemas/CkanOrganization'
+        tags:
+          type: array
+          description: Tags
+          items: '#/components/schemas/CkanTag'
+    CkanResource:
+      type: object
+      description: Resource object
+      properties:
+        package_id:
+          type: string
+          description: Dataset id
+          example: d1778088-f56a-4353-891f-21f803b2dad5
+        id:
+          type: string
+          description: Resource id
+          example:
+            f9dbfc75-a2dc-42af-9f50-425e4107ae84
+        name:
+          type: string
+          description: Resource name
+          example: Singapore Residents by Ethnic Group and Sex, End June, Annual
+        format:
+          type: string
+          description: Resource format
+          enum: [CSV, PDF, KML, SHP, API]
+          example: CSV
+        url:
+          type: string
+          description: Source url
+          example: https://storage.data.gov.sg/resident-population-by-ethnicity-gender-and-age-group/resources/singapore-residents-by-ethnic-group-and-sex-end-june-annual-2017-11-16T23-03-38Z.csv
+        coverage_start:
+          type: string
+          description: Coverage start date
+          example: '1960-01-01'
+        coverage_end:
+          type: string
+          description: Coverage end date
+          example: '2017-12-31'
+        created:
+          type: string
+          description: Date created
+          example: '2015-10-28T13:16:34.917976'
+        last_modified:
+          type: string
+          description: Date last modified
+          example: '2017-11-16T23:03:38.718472'
+        fields:
+          type: array
+          description: Data fields
+          items:
+            $ref: '#/components/schemas/CkanField'
+          example:
+            - name: year
+              title: Year
+              type: datetime
+              sub_type: year
+              format: YYYY
+            - name: value
+              title: Number
+              type: numeric
+              sub_type: general
+              format: ''
+    CkanField:
+      type: object
+      description: Data field
+      properties:
+        name:
+          type: string
+          description: Field name
+        title:
+          type: string
+          description: Displayed field name
+        type:
+          type: string
+          description: Field type
+        sub_type:
+          type: string
+          description: Field sub type
+        format:
+          type: string
+          description: Date format
+        coordinate_system:
+          type: string
+          description: Coordinate system
+    CkanOrganization:
+    CkanGroup:
+    CkanTag:
+  responses:
+    Error:
+      description: Error information
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
