@@ -1652,8 +1652,87 @@ components:
           type: string
           description: Coordinate system
     CkanOrganization:
+      type: object
+      description: CKAN Organisation object
+      properties:
+        description:
+          type: string
+          description: Description of organisation
+        created:
+          type: string
+          description: Date created
+          example: '2015-10-28T13:16:34.917976'
+        title: 
+          type: string
+          description: Organisation display name
+          example: "Accounting and Corporate Regulatory Authority"
+        name:
+          type: string
+          description: Organisation CKAN alias
+          example: "accounting-and-corporate-regulatory-authority"
+        is_organization: 
+          type: boolean
+          description: ''
+        state: 
+          type: string
+          description: State of organisation in CKAN
+          example: "active"
+        image_url: 
+          type: string
+          description: URL to image of organisation logo
+        revision_id: 
+          type: string
+          description: version id
+        type: 
+          type: string
+          description: Type of organisation
+        id: 
+          type: string
+          description: Organisation CKAN ID
+        approval_status:
+          type: string
+          description: Approval status for organisation
     CkanGroup:
+      type: object
+      description: CKAN Group object
+      properties:
+        display_name: 
+          type: string
+          description: Group Name
+        description: 
+          type: string
+          description: Description of group
+        image_display_url: 
+           type: string
+           description: URL to image of group's display image
+        title: 
+          type: string
+          description: Group display name
+        id: 
+          type: string
+          description: Group CKAN ID
+        name: 
+          type: string
+          description: Group CKAN alias    
     CkanTag:
+      type: object
+      descript: CKAN Tag object
+        vocabulary_id:
+          type: string
+          description: Tag ID
+        state: 
+          type: string
+          description: State of tag in CKAN
+        display_name: 
+          type: string
+          description: Tag Name
+        id: 
+          type: string
+          description: Tag CKAN ID
+        name: 
+          type: string
+          description: Tag CKAN alias    
+
   responses:
     Error:
       description: Error information
