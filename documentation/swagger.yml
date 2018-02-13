@@ -624,13 +624,13 @@ paths:
       parameters:
         - name: limit
           in: query
-          description: int
+          description: If given, the list of datasets will be broken into pages of at most limit datasets per page and only one page will be returned at a time (optional)
           required: false
           schema:
             type: integer
         - name: offset
           in: query
-          description: int
+          description: When limit is given, the offset to start returning packages from
           required: false
           schema:
             type: integer
@@ -671,7 +671,7 @@ paths:
       parameters:
         - name: id
           in: query
-          description: Package name or id
+          description: The id or name of the dataset
           required: true
           schema:
             type: string
@@ -710,7 +710,7 @@ paths:
       parameters:
         - name: id
           in: query
-          description: Resource id
+          description: The id of the resource
           required: true
           schema:
             type: string
@@ -749,26 +749,26 @@ paths:
       parameters:
         - name: resource_id
           in: query
-          description: Resource id
+          description:  ID or alias of the resource to be searched against
           required: true
           schema:
             type: string
         - name: limit
           in: query
-          description: int
+          description: Maximum number of rows to return (optional, default: 100)
           required: false
           schema:
             type: integer
             default: 100
         - name: offset
           in: query
-          description: int
+          description: Offset this number of rows (optional)
           required: false
           schema:
             type: integer
         - name: fields
           in: query
-          description: Commas-separated list of fields to retrieve
+          description: Fields to return (optional, default: all fields in original order)
           required: false
           schema:
             type: string
@@ -780,7 +780,7 @@ paths:
             type: string
         - name: q
           in: query
-          description: 'String or dictionary. Like filters but performs a fuzzy text search'
+          description: 'Full text query. If it’s a string, it’ll search on all fields on each row. If it’s a dictionary as {“key1”: “a”, “key2”: “b”}, it’ll search on each specific field (optional)'
           required: false
           schema:
             type: string
@@ -792,7 +792,7 @@ paths:
             type: string
         - name: records_format
           in: query
-          description: Format for the returned records
+          description: 'The format for the records return value: ‘objects’ (default) list of {fieldname1: value1, ...} dicts, ‘lists’ list of [value1, value2, ...] lists, ‘csv’ string containing comma-separated values with no header, ‘tsv’ string containing tab-separated values with no header'
           required: false
           schema:
             type: string
