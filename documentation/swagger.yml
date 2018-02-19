@@ -755,7 +755,7 @@ paths:
             type: string
         - name: limit
           in: query
-          description: Maximum number of rows to return (optional, default: 100)
+          description: 'Maximum number of rows to return (optional, default: 100)'
           required: false
           schema:
             type: integer
@@ -768,7 +768,7 @@ paths:
             type: integer
         - name: fields
           in: query
-          description: Fields to return (optional, default: all fields in original order)
+          description: 'Fields to return (optional, default: all fields in original order)'
           required: false
           schema:
             type: string
@@ -1716,7 +1716,8 @@ components:
           description: Group CKAN alias    
     CkanTag:
       type: object
-      descript: CKAN Tag object
+      description: CKAN Tag object
+      properties:
         vocabulary_id:
           type: string
           description: Tag ID
