@@ -65,38 +65,38 @@ paths:
                       $ref: '#/components/schemas/TrafficImages'
         default:
           $ref: '#/components/responses/Error'
-    /transport/carpark-availability:
-      get:
-        summary: Get the latest carpark availability in Singapore
-        description: |
-          - Retrieved every minute
-          - Use the date_time parameter to retrieve the latest carpark availability at that moment in time
-          - Detailed carpark information can be found at https://data.gov.sg/dataset/hdb-carpark-information
-          - We recommend that this endpoint be called every minute
-        tags:
-          - Transport
-        parameters:
-          - name: date_time
-            in: query
-            description: YYYY-MM-DD[T]HH:mm:ss (SGT)
-            required: false
-            type: string
-        responses:
-          '200':
-            description: Carpark availability
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    api_info:
-                      $ref: '#/components/schemas/ApiInfo'
+  /transport/carpark-availability:
+    get:
+      summary: Get the latest carpark availability in Singapore
+      description: |
+        - Retrieved every minute
+        - Use the date_time parameter to retrieve the latest carpark availability at that moment in time
+        - Detailed carpark information can be found at https://data.gov.sg/dataset/hdb-carpark-information
+        - We recommend that this endpoint be called every minute
+      tags:
+        - Transport
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Carpark availability
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  items:
+                    type: array
                     items:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/CarparkAvailability'
-          default:
-            $ref: '#/components/responses/Error'
+                      $ref: '#/components/schemas/CarparkAvailability'
+        default:
+          $ref: '#/components/responses/Error'
   /environment/psi:
     get:
       summary: Retrieve the latest PSI information
@@ -851,21 +851,21 @@ paths:
                           - type: numeric
                             id: value
                         records:
-                          - year:	1960
-                            level_1:	Total Residents
-                            value:	1646400
-                          - year:	1960
-                            level_1:	Total Male Residents
-                            value:	859600
-                          - year:	1960
-                            level_1:	Total Female Residents
-                            value:	786800
-                          - year:	1961
-                            level_1:	Total Residents
-                            value:	1646400
-                          - year:	1961
-                            level_1:	Total Male Residents
-                            value:	859600
+                          - year:  1960
+                            level_1:  Total Residents
+                            value:  1646400
+                          - year:  1960
+                            level_1:  Total Male Residents
+                            value:  859600
+                          - year:  1960
+                            level_1:  Total Female Residents
+                            value:  786800
+                          - year:  1961
+                            level_1:  Total Residents
+                            value:  1646400
+                          - year:  1961
+                            level_1:  Total Male Residents
+                            value:  859600
                         limit: 5
                         total: 870
                         _links:
