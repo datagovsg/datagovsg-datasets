@@ -65,6 +65,38 @@ paths:
                       $ref: '#/components/schemas/TrafficImages'
         default:
           $ref: '#/components/responses/Error'
+  /transport/carpark-availability:
+    get:
+      summary: Get the latest carpark availability in Singapore
+      description: |
+        - Retrieved every minute
+        - Use the date_time parameter to retrieve the latest carpark availability at that moment in time
+        - Detailed carpark information can be found at https://data.gov.sg/dataset/hdb-carpark-information
+        - We recommend that this endpoint be called every minute
+      tags:
+        - Transport
+      parameters:
+        - name: date_time
+          in: query
+          description: YYYY-MM-DD[T]HH:mm:ss (SGT)
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Carpark availability
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_info:
+                    $ref: '#/components/schemas/ApiInfo'
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CarparkAvailability'
+        default:
+          $ref: '#/components/responses/Error'
   /environment/psi:
     get:
       summary: Retrieve the latest PSI information
@@ -819,21 +851,21 @@ paths:
                           - type: numeric
                             id: value
                         records:
-                          - year:	1960
-                            level_1:	Total Residents
-                            value:	1646400
-                          - year:	1960
-                            level_1:	Total Male Residents
-                            value:	859600
-                          - year:	1960
-                            level_1:	Total Female Residents
-                            value:	786800
-                          - year:	1961
-                            level_1:	Total Residents
-                            value:	1646400
-                          - year:	1961
-                            level_1:	Total Male Residents
-                            value:	859600
+                          - year:  1960
+                            level_1:  Total Residents
+                            value:  1646400
+                          - year:  1960
+                            level_1:  Total Male Residents
+                            value:  859600
+                          - year:  1960
+                            level_1:  Total Female Residents
+                            value:  786800
+                          - year:  1961
+                            level_1:  Total Residents
+                            value:  1646400
+                          - year:  1961
+                            level_1:  Total Male Residents
+                            value:  859600
                         limit: 5
                         total: 870
                         _links:
@@ -955,6 +987,35 @@ components:
                   md5:
                     type: string
                     description: MD5 hash of image file
+    CarparkAvailability:
+      type: object
+      required:
+        - timestamp
+        - carpark_data
+      properties:
+        timestamp:
+          type: string
+          description: Time of acquisition of data
+          format: date-time
+        carpark_data:
+          type: array
+          items:
+            type: object
+            description: Carpark availability information per carpark
+            required:
+              - total_lots
+              - lot_type
+              - lots_available
+            properties:
+              total_lots:
+                type: string
+                description: Total number of carpark lots at 
+              lot_type:
+                type: string
+                description: Type of carpark lot
+              lots_available:
+                type: string
+                description: Total number of available carpark lotss
     Pm25Information:
       type: object
       properties:
