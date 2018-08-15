@@ -23,7 +23,8 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: Taxi availability information
@@ -32,7 +33,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaxiLocations'
         default:
-          $ref: '#/components/responses/Error' 
+          $ref: '#/components/responses/Error'
   /transport/traffic-images:
     get:
       summary: Get the latest images from traffic cameras all around Singapore
@@ -48,7 +49,8 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: PSI Information
@@ -80,7 +82,8 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: Carpark availability
@@ -113,12 +116,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: PSI Information
@@ -154,17 +159,19 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: PM 2.5 Information
           content:
-            application/json:            
+            application/json:
               schema:
                 type: object
                 properties:
@@ -195,12 +202,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: 2 Hour Weather Forecast
@@ -236,12 +245,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: 24 Hour Weather Forecast
@@ -276,12 +287,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: 4 Day Weather Forecast
@@ -314,12 +327,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: UV Index
@@ -351,12 +366,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: Air Temperature Information
@@ -413,12 +430,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: Rainfall Information
@@ -475,12 +494,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: Relative Humidity Information
@@ -537,12 +558,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: Wind Direction Information
@@ -599,12 +622,14 @@ paths:
           in: query
           description: YYYY-MM-DD[T]HH:mm:ss (SGT)
           required: false
-          type: string
+          schema:
+            type: string
         - name: date
           in: query
           description: YYYY-MM-DD
           required: false
-          type: string
+          schema:
+            type: string
       responses:
         '200':
           description: Wind Speed Information
@@ -1009,7 +1034,7 @@ components:
             properties:
               total_lots:
                 type: string
-                description: Total number of carpark lots at 
+                description: Total number of carpark lots at
               lot_type:
                 type: string
                 description: Type of carpark lot
@@ -1531,7 +1556,7 @@ components:
             result:
               type: object
               description: Resource
-              required: 
+              required:
                 - resource_id
                 - fields
                 - records
@@ -1590,7 +1615,7 @@ components:
         topics:
           type: array
           description: Related topics
-          items: 
+          items:
             type: string
           example:
             - society
@@ -1723,7 +1748,7 @@ components:
           type: string
           description: Date created
           example: '2015-10-28T13:16:34.917976'
-        title: 
+        title:
           type: string
           description: Organisation display name
           example: "Accounting and Corporate Regulatory Authority"
@@ -1731,23 +1756,23 @@ components:
           type: string
           description: Organisation CKAN alias
           example: "accounting-and-corporate-regulatory-authority"
-        is_organization: 
+        is_organization:
           type: boolean
           description: ''
-        state: 
+        state:
           type: string
           description: State of organisation in CKAN
           example: "active"
-        image_url: 
+        image_url:
           type: string
           description: URL to image of organisation logo
-        revision_id: 
+        revision_id:
           type: string
           description: version id
-        type: 
+        type:
           type: string
           description: Type of organisation
-        id: 
+        id:
           type: string
           description: Organisation CKAN ID
         approval_status:
@@ -1757,24 +1782,24 @@ components:
       type: object
       description: CKAN Group object
       properties:
-        display_name: 
+        display_name:
           type: string
           description: Group Name
-        description: 
+        description:
           type: string
           description: Description of group
-        image_display_url: 
+        image_display_url:
            type: string
            description: URL to image of group's display image
-        title: 
+        title:
           type: string
           description: Group display name
-        id: 
+        id:
           type: string
           description: Group CKAN ID
-        name: 
+        name:
           type: string
-          description: Group CKAN alias    
+          description: Group CKAN alias
     CkanTag:
       type: object
       description: CKAN Tag object
@@ -1782,18 +1807,18 @@ components:
         vocabulary_id:
           type: string
           description: Tag ID
-        state: 
+        state:
           type: string
           description: State of tag in CKAN
-        display_name: 
+        display_name:
           type: string
           description: Tag Name
-        id: 
+        id:
           type: string
           description: Tag CKAN ID
-        name: 
+        name:
           type: string
-          description: Tag CKAN alias    
+          description: Tag CKAN alias
 
   responses:
     Error:
