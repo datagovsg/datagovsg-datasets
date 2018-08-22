@@ -7,6 +7,80 @@ info:
 servers:
   - url: https://api.data.gov.sg/v1
 paths:
+  /technology/ipos/patents:
+    get:
+      summary: Get patent applications lodged with IPOS
+      description: |
+        - Updated daily from IPOS
+        - Use the `lodgement_date` parameter to retrieve applications lodged at that moment in time
+        - Use the `application_number` paramter to retrieve a specific application
+      tags:
+        - technology
+      parameters:
+        - name: lodgement_date
+          in: query
+          description: YYYY-MM-DD
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Patent application information
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lodgement_date:
+                    type: string
+                    description: Date of lodgement of application from IPOS
+                    format: date
+                  count:
+                    type: integer
+                    enum: 0
+                  applications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IposPatentApplications'
+        default:
+          $ref: '#/components/responses/Error'
+  /technology/ipos/designs:
+    get:
+      summary: Get design applications lodged with IPOS
+      description: |
+        - Updated daily from IPOS
+        - Use the `lodgement_date` parameter to retrieve applications lodged at that moment in time
+        - Use the `application_number` paramter to retrieve a specific application
+      tags:
+        - technology
+      parameters:
+        - name: lodgement_date
+          in: query
+          description: YYYY-MM-DD
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Design application information
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lodgement_date:
+                    type: string
+                    description: Date of lodgement of application from IPOS
+                    format: date
+                  count:
+                    type: integer
+                    enum: 0
+                  applications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IposDesignApplications'
+        default:
+          $ref: '#/components/responses/Error'
   /transport/taxi-availability:
     get:
       summary: Get locations of available taxis in Singapore
@@ -911,6 +985,562 @@ paths:
        - url: https://data.gov.sg/api/action
 components:
   schemas:
+    IposPatentApplications:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            applicationNum:
+              description: >-
+                System number that auto generated which is unique to represent a
+                patent application number
+              type: string
+            applicationStatus:
+              description: IP status for a patent. The code desciption is store in code table
+              type: string
+            applicationType:
+              description: Type of the application filed in singapore
+              type: string
+            filingDate:
+              description: FilingDate
+              type: string
+              format: date
+            lodgementDate:
+              description: Lodgement Date of the Request
+              type: string
+              format: date
+            titleOfInvention:
+              description: Title of Invention
+              type: string
+            ipc:
+              type: string
+              description: IPC Symbol
+            dateofPublication:
+              description: Date of the Application Section 27 Publication date.
+              type: string
+              format: date
+            publicationPatentNumForOldApplication:
+              description: >-
+                Publication Patent Num for old application Legacy Data Number (
+                assigned after grant )
+              type: string
+        inventors:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: Name of Inventor
+                type: string
+              address:
+                description: >-
+                  Inventor address, address details is stored in CM.Address table,
+                  link with CM.Address.Id
+                type: string
+              countryOfResidence:
+                type: object
+                properties:
+                  code:
+                    description: Country code
+                    type: string
+                  description:
+                    description: Country description
+                    type: string
+              nationality:
+                description: Nationality
+                type: string
+        applicant:
+          type: array
+          items:
+            type: object
+            properties:
+              uenCompanyCode:
+                description: Code generated by system/assign by officer
+                type: string
+              name:
+                description: Name of applicant
+                type: string
+              address:
+                description: Applicant address
+                type: string
+              countryOfIncorporationOrResidence:
+                type: object
+                properties:
+                  code:
+                    description: Country code
+                    type: string
+                  description:
+                    description: Country description
+                    type: string
+              stateOfIncorporation:
+                type: object
+                properties:
+                  code:
+                    description: State code
+                    type: string
+                  description:
+                    description: State description
+                    type: string
+              nationality:
+                type: object
+                properties:
+                  code:
+                    description: Country code
+                    type: string
+                  description:
+                    description: Country description
+                    type: string
+              soleProprietorPartnerName:
+                description: Name of Partner
+                type: string
+        agentCorrespondenceDetails:
+          type: array
+          items:
+            type: object
+            properties:
+              representationType:
+                description: indicator to represent if represent as an agent
+                type: string
+              agent:
+                type: object
+                properties:
+                  uenCompanyCode:
+                    description: UEN/Agent code
+                    type: string
+                  name:
+                    description: Agent name
+                    type: string
+              actionRepresenting:
+                description: Agent represent for which action
+                type: string
+              representativeName:
+                description: Representative/care off name
+                type: string
+              addressForServiceInSingapore:
+                description: Agent address
+                type: string
+        declarationOfPriority:
+          type: array
+          items:
+            type: object
+            properties:
+              applicationNum:
+                description: Application numberPriorityApplnNum
+                type: string
+              country:
+                type: object
+                properties:
+                  code:
+                    description: Country code
+                    type: string
+                  description:
+                    description: Country description
+                    type: string
+              filingDate:
+                description: PriorityFilingDate
+                type: string
+                format: date
+        grantAndRenewal:
+          type: object
+          properties:
+            grantDate:
+              description: Grant Date
+              type: string
+              format: date
+            nextRenewalDate:
+              description: Next Renewal Due date
+              type: string
+              format: date
+            dateOfRenewal:
+              description: PF15/PF53
+              type: string
+              format: date
+            dateOfLastRenewal:
+              description: Renewal Record date
+              type: string
+              format: date
+            yearOfLastRenewal:
+              description: Renewal Record year
+              type: string
+            expiryDate:
+              description: Expiry date
+              type: string
+              format: date
+            divisionalParentofUKEUPatentNum:
+              description: >-
+                This is applicable to pre 1996 applications. This is identical to
+                XUK No. from Staff portal IP Master
+              type: string
+            dateOfGrantOfUKEUPatentNum:
+              description: >-
+                This is applicable to pre 1996 applications. This is identical to
+                XUK No. from Staff portal IP Master
+              type: string
+              format: date
+            dateOfIssueOfCertificateOfRegistrationInSingapore:
+              description: >-
+                This is applicable to pre 1996 applications.  This is identical
+                to  “Grant Date” from Staff portal IP Master
+              type: string
+              format: date
+        divisionalApplications:
+          type: array
+          items:
+            type: object
+            properties:
+              divisionalApplicationNum:
+                description: Application number for divisional application
+                type: string
+              divisionalApplicationLodgementDate:
+                description: Application Lodgement Date
+                type: string
+                format: date
+              parentApplicationNum:
+                description: Applicable for Divisional Application
+                type: string
+              parentFilingDateForDivisional:
+                description: Applicable for Divisional Application
+                type: string
+                format: date
+        PCTApplication:
+          type: array
+          items:
+            type: object
+            properties:
+              PCTApplicationNum:
+                description: PCT Application Num.
+                type: string
+              PCTPublicationNum:
+                description: Publication date of PCTPublication number of WIPO application
+                type: string
+              PCTPublicationDate:
+                description: Publication Date that WIPO published the application
+                type: string
+                format: date
+              PCTEntryDate:
+                description: PF37 Lodgement Date
+                type: string
+                format: date
+              dateOfPublicationOfEntryIntoNationalPhase:
+                description: Journal Date of Bibliographic Publication
+                type: string
+                format: date
+              PCTPriorityClaimed:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    applicationNum:
+                      description: Application number
+                      type: string
+                    country:
+                      type: object
+                      properties:
+                        code:
+                          description: Country code
+                          type: string
+                        description:
+                          description: Country description
+                          type: string
+                    filingDate:
+                      description: Filing date
+                      type: string
+                      format: date
+        hmgStatus:
+          type: array
+          items:
+            type: object
+            properties:
+              caseNum:
+                type: string
+              lodgeDate:
+                type: string
+                format: date
+              caseStatus:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+              caseType:
+                type: object
+                properties:
+                  code:
+                    description: code
+                    type: string
+                  description:
+                    description: description
+                    type: string
+        otherEntries:
+          type: array
+          items:
+            type: object
+            properties:
+              events:
+                type: object
+                properties:
+                  code:
+                    description: Event code
+                    type: string
+                  description:
+                    description: Event description
+                    type: string
+                  eventDate:
+                    description: Event date
+                    type: string
+                    format: date
+        license:
+          type: array
+          items:
+            type: object
+            properties:
+              isLicensor:
+                type: boolean
+              particularsOfLicensorLicensee:
+                type: object
+                properties:
+                  licensorlicenseeName:
+                    type: string
+                  licensorlicenseeCode:
+                    type: string
+                  address:
+                    type: string
+              licenseType:
+                type: string
+                description: Licensee types
+              licenseStartDate:
+                type: string
+                description: License start date
+                format: date
+              licenseEndDate:
+                type: string
+                description: License end date
+                format: date
+              detailsOfLicenceToBeRegisteredAmendedOrTerminated:
+                type: string
+                description: 'Details of  license to be registered, amended or terminated'
+              licenseReferenceNum:
+                type: string
+                description: License Reference Number
+        securityInterest:
+          type: array
+          items:
+            type: object
+            properties:
+              securityInterestRefNum:
+                type: string
+              lodgementDate:
+                type: string
+                format: date
+              grantorParticulars:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    grantorName:
+                      type: string
+                    grantorAddress:
+                      type: string
+              securityInterestDetails:
+                type: string
+                description: >-
+                  Details of Security Interest to be Registered, Amended or
+                  Terminated
+        transferOfOwnership:
+          type: array
+          items:
+            type: object
+            properties:
+              currentApplicantProprietorDetails:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  address:
+                    type: string
+                  countryOfIncorporation:
+                    type: string
+              subsequentApplicantProprietorDetails:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  address:
+                    type: string
+                  countryOfIncorporation:
+                    type: string
+              dateOfTranferOfOwnership:
+                description: Date of Transfer of Ownership
+                type: string
+                format: date
+        rupka:
+          type: array
+          items:
+            type: object
+            properties:
+              xPatentNum:
+                description: Applicable for migrated data only
+                type: string
+              xukNum:
+                description: Applicable for migrated data only
+                type: string
+              xukrantDate:
+                description: Applicable for migrated data only
+                type: string
+                format: date
+              xGazetteNum:
+                description: Applicable for migrated data only
+                type: string
+              xGazetteDate:
+                description: Applicable for migrated data only
+                type: string
+                format: date
+              xIsSection261c:
+                description: Applicable for migrated data only
+                type: boolean
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              lodgementDate:
+                description: Date of lodgement
+                type: string
+                format: date
+              fileId:
+                description: ID of file
+                type: string
+              fileName:
+                description: Name of file
+                type: string
+              fileUrl:
+                description: Url of file
+                type: string
+              docType:
+                type: object
+                properties:
+                  code:
+                    description: Document type code
+                    type: string
+                  description:
+                    description: Document type description
+                    type: string
+    IposDesignApplications:
+      type: object
+      properties:
+        summary:
+          type: object
+          properties:
+            applicationNum:
+              description: >-
+                System number that auto generated which is unique to represent a
+                DS application number
+              type: string
+            filingDate:
+              description: Date that national application is filed/ Given by WIPO for IR case
+              type: string
+              format: date
+            classSubClass:
+              description: Classification Code & Classification sub code
+              type: string
+            status:
+              description: IP status for a design
+              type: string
+            approvedDate:
+              description: Approved Date
+              type: string
+            ukDesignNum:
+              description: Unique number to represent a UK design application number
+              type: string
+            ukRegistrationDate:
+              description: Registration date of a UK design number
+              type: string
+              format: date
+            internationalRegistrationNum:
+              description: International Registration number
+              type: string
+            internationalRegistrationDate:
+              description: Filing date for the international registration application.
+              type: string
+              format: date
+            renewalDueDate:
+              description: >-
+                When renewal had been filed, this field will be updated to the
+                renewal date. Let say for for the first renewal, it is the date
+                after 5 years of filing date.
+              type: string
+              format: date
+            expiryDate:
+              description: >-
+                25 years after filing date. The particular design will be expired
+                after this date. It consider a non-live design.
+              type: string
+              format: date
+            lodgementDate:
+              description: >-
+                Date that form get lodge regardless if fall in holiday or excluded
+                date.
+              type: string
+              format: date
+        applicants:
+          type: array
+          items:
+            type: object
+            properties:
+              uenCompanyCode:
+                description: UEN/Company Code generated by system/assigned by officer
+                type: string
+              name:
+                description: Name of applicant
+                type: string
+              address:
+                description: Address of applicant
+                type: string
+              countryOfIncorporationOrResidence:
+                description: Country of Incorporation/Residence
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+              stateOfIncorporation:
+                description: State of Incorporation
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+              nationality:
+                description: Nationality
+                type: object
+                properties:
+                  code:
+                    type: string
+                  description:
+                    type: string
+              soleproprietorPartnerName:
+                type: string
+                description: Sole Proprietor or Partner's Name
+              articles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    numOfArticlesInSet:
+                      description: Number of articles in the set
+                      type: integer
+                    articleName:
+                      description: Article Name
+                      type: string
+
     TaxiLocations:
       type: object
       description: A GeoJSON representing the locations of available taxis in Singapore
