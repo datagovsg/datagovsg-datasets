@@ -13,7 +13,6 @@ paths:
       description: |
         - Updated daily from IPOS
         - Use the `lodgement_date` parameter to retrieve applications lodged at that moment in time
-        - Use the `application_number` paramter to retrieve a specific application
       tags:
         - technology
       parameters:
@@ -50,7 +49,6 @@ paths:
       description: |
         - Updated daily from IPOS
         - Use the `lodgement_date` parameter to retrieve applications lodged at that moment in time
-        - Use the `application_number` paramter to retrieve a specific application
       tags:
         - technology
       parameters:
@@ -87,7 +85,6 @@ paths:
       description: |
         - Updated daily from IPOS
         - Use the `lodgement_date` parameter to retrieve applications lodged at that moment in time
-        - Use the `application_number` paramter to retrieve a specific application
       tags:
         - technology
       parameters:
