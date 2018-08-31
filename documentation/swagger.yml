@@ -20,7 +20,7 @@ paths:
         - name: lodgement_date
           in: query
           description: YYYY-MM-DD
-          required: true
+          required: false
           schema:
             type: string
       responses:
@@ -57,7 +57,7 @@ paths:
         - name: lodgement_date
           in: query
           description: YYYY-MM-DD
-          required: true
+          required: false
           schema:
             type: string
       responses:
@@ -94,7 +94,7 @@ paths:
         - name: lodgement_date
           in: query
           description: YYYY-MM-DD
-          required: true
+          required: false
           schema:
             type: string
       responses:
