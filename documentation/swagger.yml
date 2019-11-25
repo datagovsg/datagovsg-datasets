@@ -3,7 +3,14 @@ openapi: 3.0.0
 info:
   title: Data.gov.sg APIs
   description: '"APIs for People"'
+  termsOfService: https://data.gov.sg/privacy-and-website-terms
+  license:
+    name:  Singapore Open Data Licence 1.0
+    url: https://data.gov.sg/open-data-licence
   version: 1.0.0
+externalDocs:
+  description: Official Data.gov.sg API documentation
+  url: https://data.gov.sg/developer
 servers:
   - url: https://api.data.gov.sg/v1
 paths:
